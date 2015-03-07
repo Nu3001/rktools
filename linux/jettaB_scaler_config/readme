@@ -1,0 +1,75 @@
+ 该工具为JettaB(RK616) scaler 参数配置工具，在使用一个lcdc
+ 配合内部scaler模块实现双显功能的时候，需要使用该工具计算pll
+ 相关的配置参数，使用双lcdc的时候，不需要进行这种配置。
+ 使用方法如下：
+ （1）把屏幕参数（DCLK、H_PW、H_BP、H_VD、H_FP,V_PW、V_BP、V_VD、V_FP）
+填写在screen.h文件中。
+ （2）执行./jettaB 可执行文件，该文件会打印出屏幕参数和各个HDMI分辨率
+下对应的pll, scaler配置参数,如下所示：
+dclk:50000000
+h_pw:30
+h_bp:10
+h_vd:1024
+h_fp:210
+v_pw:13
+v_bp:10
+v_vd:600
+v_fp:22
+*********1080P 60HZ*********
+pll_cfg_val:0x01443013
+frac:0x4d9380
+dsp_frm_vst:0x00b
+dsp_frm_hst:0x000
+
+
+*********1080P 50HZ*********
+pll_cfg_val:0x01843013
+frac:0x4d9365
+dsp_frm_vst:0x00a
+dsp_frm_hst:0xa4f
+
+
+*********720P 60HZ*********
+pll_cfg_val:0x01423013
+frac:0x4d9380
+dsp_frm_vst:0x008
+dsp_frm_hst:0x000
+
+
+*********720P 50HZ*********
+pll_cfg_val:0x01823013
+frac:0x4d9365
+dsp_frm_vst:0x007
+dsp_frm_hst:0x7bb
+
+
+*********576P 50HZ*********
+pll_cfg_val:0x01c12015
+frac:0x80f04c
+dsp_frm_vst:0x01f
+dsp_frm_hst:0x2b3
+
+
+*********480P 60HZ*********
+pll_cfg_val:0x01812016
+frac:0x45d17b
+dsp_frm_vst:0x01a
+dsp_frm_hst:0x359
+（3）将（2）中生成的参数填写到对应的屏幕配置（驱动）文件中，可参考
+RK3XXX SDK的屏幕配置文件，lcd_b101ew05.c
+第一部分是在screen.h中定义的屏幕参数，剩下的各部分为各个hdmi分辨率下
+对应的pll scaler 配置参数。其对应关系如下：
+pll_cfg_val -----------> Sx_PLL_CFG_VAL
+frac        -----------> Sx_FRAC
+dsp_frm_vst -----------> Sx_SCL_VST
+dsp_frm_hst -----------> Sx_SCL_HST
+
+Sx_VIF_VST 定义为0x01，Sx_VIF_HST 一般定义成0xcf,然后根据实际的显示情况可以对VIF_HST进行适当的微调。
+该参数会影响图像在HDMI电视和LCD屏幕上的左右位置,偏左或者偏右边（注意，该参数只有在连接上HDMI的时候才
+会起作用）
+在实际使用的过程中，如果连接上HDMI电视的时候，HDMI电视显示正常，LCD屏幕上显示有异常，位置偏移或者有
+横竖的线条，可以对Sx_SCL_VST、Sx_SCL_HST进行微调。
+建议的调节顺序是，先调节Sx_SCL_VST,Sx_SCL_HST,这两个参数只影响LCD屏幕上的显示，VST影响垂直方向，HST影响
+水平方向。再这两个参数调节都不起作用或者不能完全达到显示效果的情况下，再去调节Sx_VIF_HST(建议不要动Sx_VIF_VST).
+
+
